@@ -20,7 +20,7 @@
       </header>
 
       <section class="layout-grid">
-        <article class="card panel">
+        <article class="card panel input-panel">
           <div class="panel-header">
             <h2>注文入力</h2>
             <span class="muted">API未接続（UI / DB保存のみ）</span>
@@ -114,7 +114,10 @@
               <textarea id="note" name="note" rows="3" placeholder="トレード意図など"></textarea>
             </label>
 
-            <button id="submitButton" class="primary" type="submit">複数注文を実行</button>
+            <div class="form-footer">
+              <button id="submitButton" class="primary" type="submit">複数注文を実行</button>
+              <p class="form-hint">誤発注防止のため Enter キーでは実行されません。</p>
+            </div>
           </form>
         </article>
 

@@ -92,6 +92,19 @@ const resetOrderRows = () => {
 addRowButton.addEventListener("click", () => {
   createOrderRow();
 });
+orderForm.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter") {
+    return;
+  }
+
+  const target = event.target;
+  if (target instanceof HTMLTextAreaElement) {
+    return;
+  }
+
+  event.preventDefault();
+});
+
 orderForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
