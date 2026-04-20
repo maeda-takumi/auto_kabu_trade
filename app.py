@@ -505,8 +505,12 @@ class TradingConsoleApi:
 
     def _load_config(self) -> KabuStationConfig:
         if not CONFIG_PATH.exists():
+            example_path = CONFIG_DIR / "kabusapi_config.ini.example"
             raise FileNotFoundError(
-                f"設定ファイルがありません: {CONFIG_PATH}. config/kabusapi_config.ini.example をコピーして作成してください"
+                "設定ファイルがありません。\n"
+                f"設定先: {CONFIG_PATH}\n"
+                f"雛形: {example_path}\n"
+                "雛形をコピーして作成してください。"
             )
 
         parser = configparser.ConfigParser()
