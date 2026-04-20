@@ -26,10 +26,13 @@
             <span class="muted">API未接続（UI / DB保存のみ）</span>
           </div>
           <form id="orderForm" class="form-grid">
-            <label>
-              銘柄コード
-              <input id="symbol" name="symbol" type="text" placeholder="例: 7203" required />
-            </label>
+            <div class="wide sub-panel" id="orderRowsSection">
+              <div class="sub-panel-header">
+                <h3>注文対象（複数可）</h3>
+                <button id="addRowButton" class="ghost" type="button">+ 銘柄入力欄を追加</button>
+              </div>
+              <div id="orderRows" class="order-rows"></div>
+            </div>
 
             <label>
               売買区分
@@ -37,16 +40,6 @@
                 <option value="BUY">買い</option>
                 <option value="SELL">売り</option>
               </select>
-            </label>
-
-            <label>
-              主注文数量
-              <input id="quantity" name="quantity" type="number" min="1" value="100" required />
-            </label>
-
-            <label>
-              注文価格（成行は0）
-              <input id="orderPrice" name="orderPrice" type="number" min="0" step="0.1" value="0" required />
             </label>
 
             <label>
@@ -58,7 +51,53 @@
             </label>
 
             <label>
-              期限
+              市場コード（Exchange）
+              <select id="exchange" name="exchange">
+                <option value="1">1: 東証</option>
+                <option value="9">9: SOR</option>
+                <option value="27">27: 東証+</option>
+              </select>
+            </label>
+
+            <label>
+              取引区分（CashMargin）
+              <select id="cashMargin" name="cashMargin">
+                <option value="1">1: 現物</option>
+                <option value="2">2: 信用新規</option>
+                <option value="3">3: 信用返済</option>
+              </select>
+            </label>
+
+            <label>
+              信用種別（MarginTradeType）
+              <select id="marginTradeType" name="marginTradeType">
+                <option value="1">1: 制度</option>
+                <option value="2">2: 一般長期</option>
+                <option value="3">3: 一般デイトレ</option>
+              </select>
+            </label>
+
+            <label>
+              受渡区分（DelivType）
+              <input id="delivType" name="delivType" type="number" min="0" value="2" required />
+            </label>
+
+            <label>
+              預り区分（FundType）
+              <input id="fundType" name="fundType" type="text" value="AA" required />
+            </label>
+
+            <label>
+              口座種別（AccountType）
+              <select id="accountType" name="accountType">
+                <option value="2">2: 一般</option>
+                <option value="4" selected>4: 特定</option>
+                <option value="12">12: 法人</option>
+              </select>
+            </label>
+
+            <label>
+              期限（timeInForce）
               <select id="timeInForce" name="timeInForce">
                 <option value="DAY">当日</option>
                 <option value="GTC">無期限</option>
@@ -66,13 +105,8 @@
             </label>
 
             <label>
-              利確指値価格（任意）
-              <input id="takeProfit" name="takeProfit" type="number" min="0" step="0.1" />
-            </label>
-
-            <label>
-              損切逆指値価格（任意）
-              <input id="stopLoss" name="stopLoss" type="number" min="0" step="0.1" />
+              有効期限（ExpireDay）
+              <input id="expireDay" name="expireDay" type="number" min="0" value="0" required />
             </label>
 
             <label class="wide">
@@ -80,7 +114,7 @@
               <textarea id="note" name="note" rows="3" placeholder="トレード意図など"></textarea>
             </label>
 
-            <button id="submitButton" class="primary" type="submit">注文を実行</button>
+            <button id="submitButton" class="primary" type="submit">複数注文を実行</button>
           </form>
         </article>
 

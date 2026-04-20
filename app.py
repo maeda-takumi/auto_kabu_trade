@@ -27,48 +27,76 @@ class TradingConsoleApi:
     def get_initial_data(self) -> Dict[str, str]:
         return {"dbStatus": f"DB接続: {self.db_path.name}"}
 
-    def submit_order(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        symbol = (payload.get("symbol") or "").strip()
+    def submit_orders(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        entries = payload.get("entries") or []
+        if not entries:
+            raise ValueError("entries が空です")
+
         side = payload.get("side") or "BUY"
-        quantity = int(payload.get("quantity") or 0)
-        order_price = float(payload.get("orderPrice") or 0)
         order_type = payload.get("orderType") or "MARKET"
         time_in_force = payload.get("timeInForce") or "DAY"
 
-        take_profit = self._parse_nullable_number(payload.get("takeProfit"))
-        stop_loss = self._parse_nullable_number(payload.get("stopLoss"))
+        exchange = int(payload.get("exchange") or 1)
+        security_type = int(payload.get("securityType") or 1)
+        cash_margin = int(payload.get("cashMargin") or 1)
+        margin_trade_type = int(payload.get("marginTradeType") or 1)
+        deliv_type = int(payload.get("delivType") or 2)
+        fund_type = str(payload.get("fundType") or "AA")
+        account_type = int(payload.get("accountType") or 4)
+        expire_day = int(payload.get("expireDay") or 0)
         note = (payload.get("note") or "").strip()
 
         created_at = self._now_iso()
 
-        with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                INSERT INTO orders (
-                    symbol, side, quantity, order_price, order_type,
-                    time_in_force, take_profit, stop_loss, note, status, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
+        values = []
+        for entry in entries:
+            symbol = (entry.get("symbol") or "").strip()
+            if not symbol:
+                continue
+
+            values.append(
                 (
                     symbol,
                     side,
-                    quantity,
-                    order_price,
+                    int(entry.get("quantity") or 0),
+                    float(entry.get("orderPrice") or 0),
                     order_type,
                     time_in_force,
-                    take_profit,
-                    stop_loss,
+                    self._parse_nullable_number(entry.get("takeProfit")),
+                    self._parse_nullable_number(entry.get("stopLoss")),
                     note,
                     "PENDING",
                     created_at,
                     created_at,
-                ),
+                    exchange,
+                    security_type,
+                    cash_margin,
+                    margin_trade_type,
+                    deliv_type,
+                    fund_type,
+                    account_type,
+                    expire_day,
+                )
+            )
+
+        if not values:
+            raise ValueError("有効な銘柄コードがありません")
+
+        with sqlite3.connect(self.db_path) as conn:
+            conn.executemany(
+                """
+                INSERT INTO orders (
+                    symbol, side, quantity, order_price, order_type,
+                    time_in_force, take_profit, stop_loss, note, status, created_at, updated_at,
+                    exchange, security_type, cash_margin, margin_trade_type, deliv_type,
+                    fund_type, account_type, expire_day
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                values,
             )
             conn.commit()
-            order_id = cursor.lastrowid
 
-        return {"orderId": order_id, "status": "PENDING"}
+        return {"status": "PENDING", "count": len(values)}
 
     def get_monitor_data(self) -> Dict[str, Any]:
         with sqlite3.connect(self.db_path) as conn:
@@ -127,11 +155,41 @@ class TradingConsoleApi:
                     note TEXT,
                     status TEXT NOT NULL,
                     created_at TEXT NOT NULL,
-                    updated_at TEXT NOT NULL
+                    updated_at TEXT NOT NULL,
+                    exchange INTEGER NOT NULL DEFAULT 1,
+                    security_type INTEGER NOT NULL DEFAULT 1,
+                    cash_margin INTEGER NOT NULL DEFAULT 1,
+                    margin_trade_type INTEGER NOT NULL DEFAULT 1,
+                    deliv_type INTEGER NOT NULL DEFAULT 2,
+                    fund_type TEXT NOT NULL DEFAULT 'AA',
+                    account_type INTEGER NOT NULL DEFAULT 4,
+                    expire_day INTEGER NOT NULL DEFAULT 0
                 )
                 """
             )
+            self._migrate_orders_table(conn)
             conn.commit()
+
+    def _migrate_orders_table(self, conn: sqlite3.Connection) -> None:
+        columns = {
+            row[1]
+            for row in conn.execute("PRAGMA table_info(orders)").fetchall()
+        }
+
+        required_columns = {
+            "exchange": "INTEGER NOT NULL DEFAULT 1",
+            "security_type": "INTEGER NOT NULL DEFAULT 1",
+            "cash_margin": "INTEGER NOT NULL DEFAULT 1",
+            "margin_trade_type": "INTEGER NOT NULL DEFAULT 1",
+            "deliv_type": "INTEGER NOT NULL DEFAULT 2",
+            "fund_type": "TEXT NOT NULL DEFAULT 'AA'",
+            "account_type": "INTEGER NOT NULL DEFAULT 4",
+            "expire_day": "INTEGER NOT NULL DEFAULT 0",
+        }
+
+        for name, ddl in required_columns.items():
+            if name not in columns:
+                conn.execute(f"ALTER TABLE orders ADD COLUMN {name} {ddl}")
 
     def _advance_mock_status(self, conn: sqlite3.Connection) -> None:
         rows = conn.execute(
