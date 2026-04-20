@@ -1,5 +1,6 @@
 const orderForm = document.getElementById("orderForm");
 const dbStatus = document.getElementById("dbStatus");
+const apiStatus = document.getElementById("apiStatus");
 const activeCount = document.getElementById("activeCount");
 const filledCount = document.getElementById("filledCount");
 const realizedPnL = document.getElementById("realizedPnL");
@@ -133,11 +134,11 @@ orderForm.addEventListener("submit", async (event) => {
   };
 
   const result = await window.pywebview.api.submit_orders(payload);
-  window.alert(`${result.count}件の注文登録が完了しました`);
+  window.alert(`${result.count}件の注文送信が完了しました（失敗 ${result.failed || 0}件）`);
   orderForm.reset();
   resetOrderRows();
-  document.getElementById("delivType").value = 2;
-  document.getElementById("fundType").value = "AA";
+  document.getElementById("delivType").value = 0;
+  document.getElementById("fundType").value = "11";
   document.getElementById("expireDay").value = 0;
   await loadMonitor();
 });
@@ -146,6 +147,7 @@ const initialize = async () => {
   resetOrderRows();
   const init = await window.pywebview.api.get_initial_data();
   dbStatus.textContent = init.dbStatus;
+  apiStatus.textContent = init.apiStatus || "API状態: 不明";
   await loadMonitor();
   window.setInterval(loadMonitor, 5000);
 };

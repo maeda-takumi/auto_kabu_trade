@@ -16,6 +16,7 @@
         </div>
         <div class="badge-wrap">
           <span id="dbStatus" class="badge">DB初期化中...</span>
+          <span id="apiStatus" class="badge">API初期化中...</span>
         </div>
       </header>
 
@@ -23,7 +24,7 @@
         <article class="card panel input-panel">
           <div class="panel-header">
             <h2>注文入力</h2>
-            <span class="muted">API未接続（UI / DB保存のみ）</span>
+            <span class="muted">主注文→利確/損切→監視をAPI連携で実行</span>
           </div>
           <form id="orderForm" class="form-grid">
             <div class="wide sub-panel" id="orderRowsSection">
@@ -79,12 +80,12 @@
 
             <label>
               受渡区分（DelivType）
-              <input id="delivType" name="delivType" type="number" min="0" value="2" required />
+              <input id="delivType" name="delivType" type="number" min="0" value="0" required />
             </label>
 
             <label>
               預り区分（FundType）
-              <input id="fundType" name="fundType" type="text" value="AA" required />
+              <input id="fundType" name="fundType" type="text" value="11" required />
             </label>
 
             <label>
