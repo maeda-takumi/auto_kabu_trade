@@ -100,10 +100,38 @@ class KabuStationClient:
                 retry_req = urllib.request.Request(url, data=body, method=method, headers=headers)
                 with urllib.request.urlopen(retry_req, timeout=self.timeout_sec) as retry_resp:
                     return json.loads(retry_resp.read().decode("utf-8"))
-            raise RuntimeError(f"kabu API HTTPエラー {exc.code}: {detail}") from exc
+            parsed_detail = self._parse_error_detail(detail)
+            if path == "/token" and exc.code == 401:
+                message = parsed_detail.get("Message") or "認証に失敗しました"
+                raise RuntimeError(
+                    "APIトークン取得に失敗しました。"
+                    f"{message}（config/kabusapi_config.ini の api_password を確認してください）"
+                ) from exc
+            raise RuntimeError(f"kabu API HTTPエラー {exc.code}: {self._format_error_detail(parsed_detail, detail)}") from exc
         except urllib.error.URLError as exc:
             raise RuntimeError(f"kabu API接続エラー: {exc}") from exc
 
+    @staticmethod
+    def _parse_error_detail(detail: str) -> Dict[str, Any]:
+        try:
+            parsed = json.loads(detail)
+            if isinstance(parsed, dict):
+                return parsed
+        except json.JSONDecodeError:
+            pass
+        return {}
+
+    @staticmethod
+    def _format_error_detail(parsed_detail: Dict[str, Any], raw_detail: str) -> str:
+        if not parsed_detail:
+            return raw_detail
+        code = parsed_detail.get("Code")
+        message = parsed_detail.get("Message")
+        if code and message:
+            return f"Code={code}, Message={message}"
+        if message:
+            return str(message)
+        return raw_detail
 
 
 class TradingConsoleApi:
@@ -659,7 +687,8 @@ if __name__ == "__main__":
         title="Auto Kabu Trade Console",
         url=str((BASE_DIR / "ui" / "index.html").resolve()),
         js_api=api,
-        fullscreen=True,
+        fullscreen=False,
+        maximized=True,
         width=1420,
         height=900,
         min_size=(1080, 720),
