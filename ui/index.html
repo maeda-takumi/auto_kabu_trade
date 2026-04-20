@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Auto Kabu Trade Console</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar glass">
+        <div>
+          <p class="eyebrow">AUTO KABU TRADE</p>
+          <h1>トレード統合ダッシュボード</h1>
+        </div>
+        <div class="status-wrap">
+          <span id="statusBadge" class="status-badge">停止中</span>
+          <button id="toggleButton" class="accent-btn">稼働開始</button>
+        </div>
+      </header>
+
+      <section class="kpi-grid">
+        <article class="kpi glass">
+          <p class="kpi-label">環境</p>
+          <h2>kabu STATION API</h2>
+          <p class="muted">本番/検証の接続状態を統合監視</p>
+        </article>
+        <article class="kpi glass">
+          <p class="kpi-label">保護注文</p>
+          <h2>TP / SL 自動連動</h2>
+          <p class="muted">建玉確定後に利確・損切を2本発注</p>
+        </article>
+        <article class="kpi glass">
+          <p class="kpi-label">安全制御</p>
+          <h2>リスク上限ガード</h2>
+          <p class="muted">閾値超過時に自動停止して通知</p>
+        </article>
+      </section>
+
+      <section class="content-grid">
+        <article class="panel glass">
+          <h3>状態遷移フロー</h3>
+          <ul id="stateFlow" class="chips"></ul>
+        </article>
+
+        <article class="panel glass">
+          <h3>リスクルール</h3>
+          <ul id="riskRules" class="plain-list"></ul>
+        </article>
+      </section>
+
+      <section class="panel glass">
+        <div class="panel-header">
+          <h3>設計ドキュメント要点</h3>
+          <span class="muted">md/ を自動読込</span>
+        </div>
+        <div id="docCards" class="doc-grid"></div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
