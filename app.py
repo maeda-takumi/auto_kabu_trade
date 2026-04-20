@@ -239,6 +239,7 @@ if __name__ == "__main__":
         title="Auto Kabu Trade Console",
         url=str((BASE_DIR / "ui" / "index.html").resolve()),
         js_api=api,
+        fullscreen=True,
         width=1420,
         height=900,
         min_size=(1080, 720),
