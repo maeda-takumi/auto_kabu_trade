@@ -3,58 +3,124 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Auto Kabu Trade Console</title>
+    <title>Auto Kabu Trade | 取引管理</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <main class="app-shell">
-      <header class="topbar glass">
+      <header class="topbar card">
         <div>
           <p class="eyebrow">AUTO KABU TRADE</p>
-          <h1>トレード統合ダッシュボード</h1>
+          <h1>取引コンソール</h1>
+          <p class="muted">主注文・保護注文の入力と取引状況モニタリング</p>
         </div>
-        <div class="status-wrap">
-          <span id="statusBadge" class="status-badge">停止中</span>
-          <button id="toggleButton" class="accent-btn">稼働開始</button>
+        <div class="badge-wrap">
+          <span id="dbStatus" class="badge">DB初期化中...</span>
         </div>
       </header>
 
-      <section class="kpi-grid">
-        <article class="kpi glass">
-          <p class="kpi-label">環境</p>
-          <h2>kabu STATION API</h2>
-          <p class="muted">本番/検証の接続状態を統合監視</p>
-        </article>
-        <article class="kpi glass">
-          <p class="kpi-label">保護注文</p>
-          <h2>TP / SL 自動連動</h2>
-          <p class="muted">建玉確定後に利確・損切を2本発注</p>
-        </article>
-        <article class="kpi glass">
-          <p class="kpi-label">安全制御</p>
-          <h2>リスク上限ガード</h2>
-          <p class="muted">閾値超過時に自動停止して通知</p>
-        </article>
-      </section>
+      <section class="layout-grid">
+        <article class="card panel">
+          <div class="panel-header">
+            <h2>注文入力</h2>
+            <span class="muted">API未接続（UI / DB保存のみ）</span>
+          </div>
+          <form id="orderForm" class="form-grid">
+            <label>
+              銘柄コード
+              <input id="symbol" name="symbol" type="text" placeholder="例: 7203" required />
+            </label>
 
-      <section class="content-grid">
-        <article class="panel glass">
-          <h3>状態遷移フロー</h3>
-          <ul id="stateFlow" class="chips"></ul>
+            <label>
+              売買区分
+              <select id="side" name="side">
+                <option value="BUY">買い</option>
+                <option value="SELL">売り</option>
+              </select>
+            </label>
+
+            <label>
+              主注文数量
+              <input id="quantity" name="quantity" type="number" min="1" value="100" required />
+            </label>
+
+            <label>
+              注文価格（成行は0）
+              <input id="orderPrice" name="orderPrice" type="number" min="0" step="0.1" value="0" required />
+            </label>
+
+            <label>
+              執行条件
+              <select id="orderType" name="orderType">
+                <option value="MARKET">成行</option>
+                <option value="LIMIT">指値</option>
+              </select>
+            </label>
+
+            <label>
+              期限
+              <select id="timeInForce" name="timeInForce">
+                <option value="DAY">当日</option>
+                <option value="GTC">無期限</option>
+              </select>
+            </label>
+
+            <label>
+              利確指値価格（任意）
+              <input id="takeProfit" name="takeProfit" type="number" min="0" step="0.1" />
+            </label>
+
+            <label>
+              損切逆指値価格（任意）
+              <input id="stopLoss" name="stopLoss" type="number" min="0" step="0.1" />
+            </label>
+
+            <label class="wide">
+              メモ
+              <textarea id="note" name="note" rows="3" placeholder="トレード意図など"></textarea>
+            </label>
+
+            <button id="submitButton" class="primary" type="submit">注文を実行</button>
+          </form>
         </article>
 
-        <article class="panel glass">
-          <h3>リスクルール</h3>
-          <ul id="riskRules" class="plain-list"></ul>
-        </article>
-      </section>
+        <article class="card panel">
+          <div class="panel-header">
+            <h2>リアルタイム取引状況</h2>
+            <span id="lastUpdated" class="muted">最終更新: -</span>
+          </div>
 
-      <section class="panel glass">
-        <div class="panel-header">
-          <h3>設計ドキュメント要点</h3>
-          <span class="muted">md/ を自動読込</span>
-        </div>
-        <div id="docCards" class="doc-grid"></div>
+          <div class="stat-grid">
+            <article class="stat">
+              <p>監視中注文</p>
+              <h3 id="activeCount">0</h3>
+            </article>
+            <article class="stat">
+              <p>本日約定件数</p>
+              <h3 id="filledCount">0</h3>
+            </article>
+            <article class="stat">
+              <p>本日実現損益</p>
+              <h3 id="realizedPnL">¥0</h3>
+            </article>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>時刻</th>
+                  <th>注文ID</th>
+                  <th>銘柄</th>
+                  <th>区分</th>
+                  <th>数量</th>
+                  <th>状態</th>
+                </tr>
+              </thead>
+              <tbody id="statusTableBody"></tbody>
+            </table>
+          </div>
+        </article>
       </section>
     </main>
 
